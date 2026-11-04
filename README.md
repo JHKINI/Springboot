@@ -8,6 +8,12 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 구조와 데이터 처리 흐름을 학습했습니다.
 
 ------------------------------------------------------------------------
+## 실행 결과 
+|:---:|
+| ![실행 결과 1](img/test1.png) ![실행 결과 2](img/test2.png) |
+| ![실행 결과 3](img/test3.png) ![실행 결과 4](img/test4.png) |
+| ![실행 결과 5](img/test5.png) ![실행 결과 6](img/test6.png) |
+
 
 ## 1. 프로젝트 개요
 

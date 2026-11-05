@@ -25,7 +25,7 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
   </tr>
 </table>
 
-
+**[▶  시연 영상 보기 (MP4)](./테스트영상.mp4)**
 ## 1. 프로젝트 개요
 
 ### 주요 기능

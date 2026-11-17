@@ -7,6 +7,15 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 페이지네이션까지 단계적으로 구현하며 Spring 기반 웹 애플리케이션의 기본
 구조와 데이터 처리 흐름을 학습했습니다.
 
+## 레포 구성
+
+| 폴더 | 단계 | 내용 |
+|---|---|---|
+| `springboot_basic` | Day 1 | Spring Security 회원가입 · 로그인 · 마이페이지 · 정보 수정 · 회원 탈퇴 |
+| `springboot_basic_ver2` | Day 1 + Day 2 (업그레이드) | 회원 관리 + 게시판 CRUD + 조회수 + **페이지네이션 · 검색** |
+
+> 이 README는 `springboot_basic_ver2` 기준으로 작성했습니다.
+
 ------------------------------------------------------------------------
 ## 실행 결과
 
@@ -30,68 +39,41 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 
 ### 주요 기능
 
-  -----------------------------------------------------------------------
-  구분                    기능                    설명
-  ----------------------- ----------------------- -----------------------
-  회원 관리               회원가입                사용자 정보를 DB에
-                                                  저장하고 비밀번호를
-                                                  BCrypt로 해시 처리
+| 구분      | 기능               | 설명                                                              |
+|:----------|:-------------------|:------------------------------------------------------------------|
+| 회원 관리 | 회원가입           | 사용자 정보를 DB에 저장하고 비밀번호를 BCrypt로 해시 처리         |
+| 회원 관리 | 로그인 / 로그아웃  | Spring Security를 이용한 인증 및 세션 관리                        |
+| 회원 관리 | 마이페이지         | 로그인한 사용자의 정보 조회                                       |
+| 회원 관리 | 회원 정보 수정     | 이름 및 비밀번호 수정                                             |
+| 회원 관리 | 회원 탈퇴          | 회원 정보 삭제 후 로그아웃                                        |
+| 게시판    | 게시글 목록        | 등록된 게시글 목록 조회                                           |
+| 게시판    | 게시글 작성        | 로그인한 사용자의 아이디를 작성자로 지정해 저장                   |
+| 게시판    | 게시글 상세 조회   | 게시글 내용 및 작성 정보 조회                                     |
+| 게시판    | 게시글 수정 / 삭제 | 게시글 작성자 확인을 통한 수정·삭제 화면 제어                     |
+| 게시판    | 조회수             | 상세 조회 시 조회수 증가                                          |
+| 게시판    | 페이지네이션       | Criteria·PageDTO로 페이지 번호와 이전·다음 버튼 계산 (10개씩)     |
+| 게시판    | 검색               | 제목·내용·작성자 조합 동적 검색 (검색 조건 유지한 채 페이지 이동) |
 
-  회원 관리               로그인 / 로그아웃       Spring Security를
-                                                  이용한 인증 및 세션
-                                                  관리
-
-  회원 관리               마이페이지              로그인한 사용자의 정보
-                                                  조회
-
-  회원 관리               회원 정보 수정          이름 및 비밀번호 수정
-
-  회원 관리               회원 탈퇴               회원 정보 삭제 후
-                                                  로그아웃
-
-  게시판                  게시글 목록             등록된 게시글 목록 조회
-
-  게시판                  게시글 작성             로그인한 사용자의
-                                                  아이디를 작성자로
-                                                  지정해 저장
-
-  게시판                  게시글 상세 조회        게시글 내용 및 작성
-                                                  정보 조회
-
-  게시판                  게시글 수정 / 삭제      게시글 작성자 확인을
-                                                  통한 수정·삭제 화면
-                                                  제어
-
-  게시판                  조회수                  상세 조회 시 조회수
-                                                  증가
-
-  게시판                  페이지네이션            Criteria를 이용한
-                                                  페이징 기준 관리 단계
-  -----------------------------------------------------------------------
-
-> 페이지네이션은 제공된 실습 내용에서 `Criteria` 클래스 생성 단계까지
-> 확인됩니다. 구체적인 필드, SQL의 LIMIT/OFFSET 또는 Oracle 페이징 쿼리,
-> 페이지 이동 UI는 확인된 코드가 없어 구현 세부사항을 임의로 추가하지
-> 않았습니다.
+> 페이지네이션과 검색은 [8장](#8-페이지네이션--검색-구현)에서 자세히 설명합니다.
 
 ------------------------------------------------------------------------
 
 ## 2. 개발 환경
 
-  항목               내용
-  ------------------ -------------------------------------------
-  언어               Java
-  JDK                17 (Temurin 17)
-  Spring Boot        4.0.9
-  빌드 도구          Maven
-  데이터베이스       Oracle
-  JDBC URL 예시      `jdbc:oracle:thin:@localhost:1521:testdb`
-  서버 포트          8081
-  ORM / SQL Mapper   MyBatis
-  화면 템플릿        Thymeleaf
-  보안               Spring Security
-  CSS 프레임워크     Bootstrap 5
-  기타               Lombok
+| 항목             | 내용                                      |
+|:-----------------|:------------------------------------------|
+| 언어             | Java                                      |
+| JDK              | 17 (Temurin 17)                           |
+| Spring Boot      | 4.0.9                                     |
+| 빌드 도구        | Maven                                     |
+| 데이터베이스     | Oracle                                    |
+| JDBC URL 예시    | `jdbc:oracle:thin:@localhost:1521:testdb` |
+| 서버 포트        | 8081                                      |
+| ORM / SQL Mapper | MyBatis                                   |
+| 화면 템플릿      | Thymeleaf                                 |
+| 보안             | Spring Security                           |
+| CSS 프레임워크   | Bootstrap 5                               |
+| 기타             | Lombok                                    |
 
 IntelliJ IDEA의 Project SDK를 JDK 17로 설정합니다.
 
@@ -99,24 +81,22 @@ IntelliJ IDEA의 Project SDK를 JDK 17로 설정합니다.
 
 ## 3. 기술 스택 및 사용 목적
 
-  기술              사용 목적
-  ----------------- -----------------------------------------------
-  Java 17           서버 애플리케이션 개발
-  Spring Boot       애플리케이션 구성 및 실행
-  Spring Security   로그인 인증, 접근 제어, 로그아웃 및 세션 관리
-  MyBatis           Mapper 인터페이스와 XML을 이용한 SQL 실행
-  Oracle            회원 및 게시글 데이터 저장
-  Thymeleaf         서버 데이터를 HTML 화면에 출력
-  Bootstrap 5       게시판 화면의 기본 레이아웃과 스타일 구성
-  Lombok            Getter, Setter, 생성자 등 반복 코드 간소화
+| 기술            | 사용 목적                                     |
+|:----------------|:----------------------------------------------|
+| Java 17         | 서버 애플리케이션 개발                        |
+| Spring Boot     | 애플리케이션 구성 및 실행                     |
+| Spring Security | 로그인 인증, 접근 제어, 로그아웃 및 세션 관리 |
+| MyBatis         | Mapper 인터페이스와 XML을 이용한 SQL 실행     |
+| Oracle          | 회원 및 게시글 데이터 저장                    |
+| Thymeleaf       | 서버 데이터를 HTML 화면에 출력                |
+| Bootstrap 5     | 게시판 화면의 기본 레이아웃과 스타일 구성     |
+| Lombok          | Getter, Setter, 생성자 등 반복 코드 간소화    |
 
 ------------------------------------------------------------------------
 
 ## 4. 프로젝트 구조
 
-기존 회원 관리 코드와 게시판 구현 내용을 기준으로 한 주요 구조입니다.
-실제 프로젝트의 세부 파일명이나 추가 클래스는 프로젝트 소스에 따라
-달라질 수 있습니다.
+`springboot_basic_ver2` 기준 주요 구조입니다.
 
 ``` text
 src/main/java/kopo/aisw/springboot_basic
@@ -136,7 +116,8 @@ src/main/java/kopo/aisw/springboot_basic
 ├── domain/
 │   ├── User.java
 │   ├── Board.java
-│   └── Criteria.java
+│   ├── Criteria.java
+│   └── PageDTO.java
 └── security/
     ├── CustomUserDetails.java
     └── CustomUserDetailsService.java
@@ -165,18 +146,11 @@ src/main/resources
 
 ### 5-1. Spring Security 핵심 개념
 
-  -------------------------------------------------------------------------
-  개념                    의미                    프로젝트 적용
-  ----------------------- ----------------------- -------------------------
-  인증(Authentication)    사용자가 누구인지 확인  아이디와 비밀번호를
-                                                  이용한 로그인
-
-  인가(Authorization)     사용자가 특정 기능에    URL별 접근 권한 설정
-                          접근할 수 있는지 확인   
-
-  비밀번호 해시           비밀번호 원문 대신      `BCryptPasswordEncoder`
-                          해시값 저장             
-  -------------------------------------------------------------------------
+| 개념                 | 의미                                       | 프로젝트 적용                     |
+|:---------------------|:-------------------------------------------|:----------------------------------|
+| 인증(Authentication) | 사용자가 누구인지 확인                     | 아이디와 비밀번호를 이용한 로그인 |
+| 인가(Authorization)  | 사용자가 특정 기능에 접근할 수 있는지 확인 | URL별 접근 권한 설정              |
+| 비밀번호 해시        | 비밀번호 원문 대신 해시값 저장             | `BCryptPasswordEncoder`           |
 
 BCrypt는 단방향 해시 방식입니다. 같은 비밀번호라도 salt에 따라 해시
 결과가 달라질 수 있으며, 로그인 시에는 `matches()`를 이용해 입력값과
@@ -201,15 +175,15 @@ public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
 주요 설정 항목은 다음과 같습니다.
 
-  설정                        역할
-  --------------------------- ----------------------------------------
-  `SecurityFilterChain`       HTTP 요청에 적용할 보안 필터 체인 구성
-  `authorizeHttpRequests()`   요청 URL별 접근 권한 설정
-  `requestMatchers()`         접근 권한을 적용할 URL 지정
-  `permitAll()`               인증 없이 접근 허용
-  `authenticated()`           로그인한 사용자만 접근 허용
-  `formLogin()`               폼 로그인 처리
-  `logout()`                  로그아웃 처리
+| 설정                      | 역할                                   |
+|:--------------------------|:---------------------------------------|
+| `SecurityFilterChain`     | HTTP 요청에 적용할 보안 필터 체인 구성 |
+| `authorizeHttpRequests()` | 요청 URL별 접근 권한 설정              |
+| `requestMatchers()`       | 접근 권한을 적용할 URL 지정            |
+| `permitAll()`             | 인증 없이 접근 허용                    |
+| `authenticated()`         | 로그인한 사용자만 접근 허용            |
+| `formLogin()`             | 폼 로그인 처리                         |
+| `logout()`                | 로그아웃 처리                          |
 
 ### 5-3. 로그인 인증 흐름
 
@@ -272,16 +246,16 @@ public void registerUser(User user) {
 
 ### 5-5. 회원 관리 URL
 
-  HTTP Method            URL                  기능
-  ---------------------- -------------------- -----------------------------
-  GET                    `/user/signup`       회원가입 화면
-  POST                   `/user/signup`       회원가입 처리
-  GET                    `/user/login`        로그인 화면
-  POST                   `/user/login-proc`   Spring Security 로그인 처리
-  GET                    `/user/mypage`       마이페이지
-  POST                   `/user/update`       회원 정보 수정
-  POST                   `/user/delete`       회원 탈퇴
-  설정된 로그아웃 요청   `/user/logout`       로그아웃
+| HTTP Method          | URL                | 기능                        |
+|:---------------------|:-------------------|:----------------------------|
+| GET                  | `/user/signup`     | 회원가입 화면               |
+| POST                 | `/user/signup`     | 회원가입 처리               |
+| GET                  | `/user/login`      | 로그인 화면                 |
+| POST                 | `/user/login-proc` | Spring Security 로그인 처리 |
+| GET                  | `/user/mypage`     | 마이페이지                  |
+| POST                 | `/user/update`     | 회원 정보 수정              |
+| POST                 | `/user/delete`     | 회원 탈퇴                   |
+| 설정된 로그아웃 요청 | `/user/logout`     | 로그아웃                    |
 
 회원 정보 수정 시에는 로그인한 사용자 정보를
 `Authentication.getName()`으로 확인합니다. 새 비밀번호가 비어 있다면
@@ -495,15 +469,15 @@ public class BoardService {
 Controller는 브라우저 요청을 받아 Service를 호출하고, 결과에 맞는 화면을
 반환합니다.
 
-  HTTP Method   URL                         기능
-  ------------- --------------------------- ------------------
-  GET           `/board/list`               게시글 목록
-  GET           `/board/write`              글쓰기 화면
-  POST          `/board/write`              게시글 저장
-  GET           `/board/view/{boardId}`     게시글 상세 조회
-  GET           `/board/edit/{boardId}`     수정 화면
-  POST          `/board/edit/{boardId}`     게시글 수정
-  POST          `/board/delete/{boardId}`   게시글 삭제
+| HTTP Method | URL                       | 기능             |
+|:------------|:--------------------------|:-----------------|
+| GET         | `/board/list`             | 게시글 목록      |
+| GET         | `/board/write`            | 글쓰기 화면      |
+| POST        | `/board/write`            | 게시글 저장      |
+| GET         | `/board/view/{boardId}`   | 게시글 상세 조회 |
+| GET         | `/board/edit/{boardId}`   | 수정 화면        |
+| POST        | `/board/edit/{boardId}`   | 게시글 수정      |
+| POST        | `/board/delete/{boardId}` | 게시글 삭제      |
 
 게시글 작성 시 작성자 아이디는 폼에서 받지 않고 인증 정보에서
 가져옵니다.
@@ -525,31 +499,23 @@ public String write(Board board, Authentication auth) {
 
 Bootstrap 5와 Thymeleaf를 사용해 게시판 화면을 구성합니다.
 
-  -----------------------------------------------------------------------
-  화면                    템플릿                  주요 내용
-  ----------------------- ----------------------- -----------------------
-  게시글 목록             `board/list.html`       게시글 번호, 제목,
-                                                  작성자, 작성일, 조회수
-
-  게시글 작성             `board/write.html`      제목과 내용 입력
-
-  게시글 상세             `board/view.html`       게시글 내용 및 작성
-                                                  정보
-
-  게시글 수정             `board/edit.html`       기존 제목과 내용을
-                                                  불러와 수정
-  -----------------------------------------------------------------------
+| 화면        | 템플릿             | 주요 내용                                 |
+|:------------|:-------------------|:------------------------------------------|
+| 게시글 목록 | `board/list.html`  | 게시글 번호, 제목, 작성자, 작성일, 조회수 |
+| 게시글 작성 | `board/write.html` | 제목과 내용 입력                          |
+| 게시글 상세 | `board/view.html`  | 게시글 내용 및 작성 정보                  |
+| 게시글 수정 | `board/edit.html`  | 기존 제목과 내용을 불러와 수정            |
 
 ### 7-1. Thymeleaf 주요 표현식
 
-  표현식        역할                      사용 예
-  ------------- ------------------------- -------------------------------
-  `th:text`     서버 데이터 출력          `th:text="${board.title}"`
-  `th:href`     링크 URL 생성             `th:href="@{/board/list}"`
-  `th:action`   폼 전송 URL 생성          `th:action="@{/board/write}"`
-  `th:each`     목록 반복 출력            `th:each="board : ${boards}"`
-  `th:if`       조건에 따라 화면 출력     `th:if="${조건}"`
-  `th:value`    입력 요소의 초기값 지정   `th:value="${board.title}"`
+| 표현식      | 역할                    | 사용 예                       |
+|:------------|:------------------------|:------------------------------|
+| `th:text`   | 서버 데이터 출력        | `th:text="${board.title}"`    |
+| `th:href`   | 링크 URL 생성           | `th:href="@{/board/list}"`    |
+| `th:action` | 폼 전송 URL 생성        | `th:action="@{/board/write}"` |
+| `th:each`   | 목록 반복 출력          | `th:each="board : ${boards}"` |
+| `th:if`     | 조건에 따라 화면 출력   | `th:if="${조건}"`             |
+| `th:value`  | 입력 요소의 초기값 지정 | `th:value="${board.title}"`   |
 
 ### 7-2. 로그인 여부에 따른 화면 제어
 
@@ -582,53 +548,276 @@ Thymeleaf Spring Security 확장 기능을 사용하면 로그인 상태에 따�
 
 ------------------------------------------------------------------------
 
-## 8. 페이지네이션 구현
+## 8. 페이지네이션 · 검색 구현
 
-게시글이 많아지면 모든 게시글을 한 화면에 출력하는 대신 여러 페이지로
-나누어 보여줄 필요가 있습니다.
+게시글이 많아지면 모든 글을 한 화면에 출력하는 대신 10개씩 나누어 보여주고,
+제목·내용·작성자로 검색할 수 있도록 구현했습니다.
 
-제공된 실습 내용에서는 페이지네이션 구현을 위한 첫 단계로 `Criteria`
-클래스를 생성하도록 안내하고 있습니다.
-
-``` text
-domain/
-└── Criteria.java
-```
-
-`Criteria`는 페이징 처리에 필요한 기준 정보를 관리하기 위한
-클래스입니다.
-
-일반적인 페이지네이션 처리 흐름은 다음과 같습니다.
+### 8-1. 처리 흐름
 
 ``` text
-사용자가 게시판 페이지 요청
+GET /board/list?pageNum=2&type=T&keyword=spring
           |
           v
-      Controller
+   BoardController.list(Criteria cri, Model model)
+          |   요청 파라미터가 Criteria 필드에 자동 바인딩
+          v
+   BoardService.getListWithPaging(cri)   → 현재 페이지 게시글 10개
+   BoardService.getTotalCount(cri)       → 검색 조건에 맞는 전체 건수
           |
           v
-       Criteria
-   (페이징 기준 전달)
+   BoardMapper.xml (Oracle ROWNUM 페이징 + 동적 검색 SQL)
           |
           v
-       Service
+   new PageDTO(cri, total)   → 시작/끝 페이지, 이전/다음 계산
           |
           v
-        Mapper
-          |
-          v
-    DB에서 해당 범위 조회
-          |
-          v
-     게시글 목록 반환
-          |
-          v
-      Thymeleaf 화면
+   board/list.html  (검색 폼 + 목록 + 페이지 번호)
 ```
 
-현재 제공된 내용에는 `Criteria`의 실제 필드 및 Mapper SQL, 페이지 번호
-계산 코드가 포함되어 있지 않으므로 해당 부분은 구현 코드 확인 후 보완할
-수 있습니다.
+### 8-2. Criteria -- 페이징·검색 기준
+
+요청 파라미터를 한 번에 받는 객체입니다. 파라미터가 없으면 기본값 1페이지, 10개입니다.
+
+``` java
+@Getter
+@Setter
+public class Criteria {
+
+    private int pageNum;     // 현재 페이지
+    private int amount;      // 한 페이지에 보여줄 게시글 수
+    private String type;     // 검색 유형 (T, C, W 조합)
+    private String keyword;  // 검색어
+
+    public Criteria() {
+        this(1, 10);
+    }
+
+    public Criteria(int pageNum, int amount) {
+        this.pageNum = pageNum;
+        this.amount = amount;
+    }
+
+    // 건너뛸 게시글 수
+    public int getOffset() {
+        return (pageNum - 1) * amount;
+    }
+
+    // 검색 유형을 배열로 변환 ("TCW" -> [T, C, W])
+    public String[] getTypeArr() {
+        return type == null ? new String[]{} : type.split("");
+    }
+}
+```
+
+| 검색 유형 코드 | 검색 대상 컬럼 |
+|---|---|
+| `T` | 제목 (`title`) |
+| `C` | 내용 (`content`) |
+| `W` | 작성자 (`user_id`) |
+| `TC`, `TW`, `TCW` | 위 코드를 조합 (OR 조건) |
+
+### 8-3. PageDTO -- 페이지 번호 계산
+
+전체 건수를 받아 화면에 보여줄 페이지 번호 범위를 계산합니다.
+페이지 번호는 10개 단위(1~10, 11~20 ...)로 묶어서 표시합니다.
+
+``` java
+@Getter
+public class PageDTO {
+
+    private int startPage;
+    private int endPage;
+    private boolean prev;
+    private boolean next;
+    private int total;
+    private Criteria cri;
+
+    public PageDTO(Criteria cri, int total) {
+        this.cri = cri;
+        this.total = total;
+
+        this.endPage = (int) (Math.ceil(cri.getPageNum() / 10.0)) * 10;
+        this.startPage = this.endPage - 9;
+
+        int realEnd = (int) Math.ceil((total * 1.0) / cri.getAmount());
+
+        if (realEnd < this.endPage) {
+            this.endPage = realEnd;
+        }
+
+        // 검색 결과가 0건이면 realEnd가 0이 되므로 최소 1로 보정
+        if (this.endPage < 1) {
+            this.endPage = 1;
+        }
+
+        this.prev = this.startPage > 1;
+        this.next = this.endPage < realEnd;
+    }
+}
+```
+
+| 현재 페이지 | 전체 건수 | startPage | endPage | prev | next |
+|---|---|---|---|---|---|
+| 1 | 0 | 1 | 1 | false | false |
+| 1 | 25 | 1 | 3 | false | false |
+| 1 | 105 | 1 | 10 | false | true |
+| 11 | 105 | 11 | 11 | true | false |
+
+> 계산 공식
+> - `endPage = ceil(현재 페이지 / 10) × 10`
+> - `startPage = endPage - 9`
+> - `realEnd = ceil(전체 건수 / 한 페이지 게시글 수)` (실제 마지막 페이지)
+> - `realEnd`가 `endPage`보다 작으면 `endPage = realEnd`
+
+### 8-4. BoardMapper.xml -- 페이징 + 동적 검색 SQL
+
+검색 조건은 `<sql>`로 한 번만 정의하고, 목록 조회와 전체 건수 조회에서 `<include>`로 재사용합니다.
+
+``` xml
+<!-- 검색 조건 -->
+<sql id="criteria">
+    <trim prefix="WHERE (" suffix=")" prefixOverrides="OR">
+        <foreach item="type" collection="typeArr">
+            <trim prefix="OR">
+                <choose>
+                    <when test="type == 'T'.toString()">
+                        title LIKE '%' || #{keyword} || '%'
+                    </when>
+                    <when test="type == 'C'.toString()">
+                        content LIKE '%' || #{keyword} || '%'
+                    </when>
+                    <when test="type == 'W'.toString()">
+                        user_id LIKE '%' || #{keyword} || '%'
+                    </when>
+                </choose>
+            </trim>
+        </foreach>
+    </trim>
+</sql>
+
+<!-- 페이징 + 검색 -->
+<select id="getListWithPaging" parameterType="kopo.aisw.springboot_basic.domain.Criteria"
+        resultType="kopo.aisw.springboot_basic.domain.Board">
+    SELECT *
+    FROM (
+        SELECT ROWNUM NUM, BOARD.*
+        FROM (
+            SELECT *
+            FROM tb_board
+            <if test="typeArr != null and typeArr.length > 0 and keyword != null and keyword != ''">
+                <include refid="criteria"/>
+            </if>
+            ORDER BY board_id DESC
+        ) BOARD
+    )
+    WHERE NUM BETWEEN #{offset} + 1 AND #{offset} + #{amount}
+</select>
+
+<!-- 검색 결과 전체 개수 -->
+<select id="getTotalCount" parameterType="kopo.aisw.springboot_basic.domain.Criteria"
+        resultType="int">
+    SELECT COUNT(*)
+    FROM tb_board
+    <if test="typeArr != null and typeArr.length > 0 and keyword != null and keyword != ''">
+        <include refid="criteria"/>
+    </if>
+</select>
+```
+
+**왜 서브쿼리를 3겹으로 감쌌나?**
+
+1.  가장 안쪽: 검색 조건(`WHERE`)과 정렬(`ORDER BY board_id DESC`)을 먼저 적용합니다.
+2.  가운데: 정렬이 끝난 결과에 `ROWNUM`으로 번호(`NUM`)를 붙입니다. `ROWNUM`은 `ORDER BY`보다 먼저 부여되기 때문에 정렬과 같은 단계에서 쓰면 번호가 뒤섞입니다.
+3.  바깥쪽: `NUM BETWEEN offset+1 AND offset+amount`로 현재 페이지 범위만 잘라냅니다.
+
+> Oracle 12c 이상에서는 `OFFSET n ROWS FETCH NEXT m ROWS ONLY` 문법으로 더 간단하게 작성할 수도 있습니다.
+
+**MyBatis 동적 SQL 태그 정리**
+
+| 태그 | 역할 |
+|---|---|
+| `<sql>` / `<include>` | 재사용할 SQL 조각 정의 / 가져오기 |
+| `<if>` | 조건이 참일 때만 SQL 포함 |
+| `<foreach>` | 컬렉션(`typeArr`)을 반복하며 SQL 생성 |
+| `<choose>` / `<when>` | 여러 조건 중 하나 선택 (switch 문과 유사) |
+| `<trim>` | 앞뒤에 `WHERE (`, `)` 를 붙이고 맨 앞의 불필요한 `OR` 제거 |
+
+### 8-5. Mapper · Service · Controller
+
+``` java
+// BoardMapper.java
+List<Board> getListWithPaging(Criteria cri);   // 페이징 + 검색
+int getTotalCount(Criteria cri);               // 검색 결과 전체 개수
+
+// BoardService.java
+public List<Board> getListWithPaging(Criteria cri) {
+    return boardMapper.getListWithPaging(cri);
+}
+
+public int getTotalCount(Criteria cri) {
+    return boardMapper.getTotalCount(cri);
+}
+
+// BoardController.java
+@GetMapping("/list")
+public String list(Criteria cri, Model model) {
+
+    // 페이징된 게시글 조회
+    List<Board> boardList = boardService.getListWithPaging(cri);
+
+    // 검색 조건에 맞는 전체 게시글 수
+    int total = boardService.getTotalCount(cri);
+
+    model.addAttribute("boards", boardList);
+    model.addAttribute("pageMaker", new PageDTO(cri, total));
+
+    return "board/list";
+}
+```
+
+### 8-6. list.html -- 검색 폼과 페이지 번호
+
+검색 폼은 `GET` 방식으로 전송하고, 페이지 번호 링크에는 **검색 조건을 함께 전달**합니다.
+
+``` html
+<!-- 검색 폼 -->
+<form th:action="@{/board/list}" method="get">
+    <select name="type">
+        <option value="">검색</option>
+        <option value="T"   th:selected="${pageMaker.cri.type == 'T'}">제목</option>
+        <option value="C"   th:selected="${pageMaker.cri.type == 'C'}">내용</option>
+        <option value="W"   th:selected="${pageMaker.cri.type == 'W'}">작성자</option>
+        <option value="TC"  th:selected="${pageMaker.cri.type == 'TC'}">제목+내용</option>
+        <option value="TW"  th:selected="${pageMaker.cri.type == 'TW'}">제목+작성자</option>
+        <option value="TCW" th:selected="${pageMaker.cri.type == 'TCW'}">제목+내용+작성자</option>
+    </select>
+    <input type="text" name="keyword" th:value="${pageMaker.cri.keyword}">
+    <button type="submit">검색</button>
+</form>
+
+<!-- 페이지 번호 -->
+<li class="page-item"
+    th:each="num : ${#numbers.sequence(pageMaker.startPage, pageMaker.endPage)}"
+    th:classappend="${pageMaker.cri.pageNum == num} ? 'active'">
+    <a class="page-link"
+       th:href="@{/board/list(pageNum=${num}, type=${pageMaker.cri.type}, keyword=${pageMaker.cri.keyword})}"
+       th:text="${num}">1</a>
+</li>
+```
+
+-   `#numbers.sequence(a, b)`: a부터 b까지의 숫자 목록을 만듭니다. `a > b`이면 **역순**으로 만들어지므로 `endPage`가 0이 되지 않도록 `PageDTO`에서 보정합니다.
+-   `th:classappend`: 현재 페이지에만 Bootstrap의 `active` 클래스를 붙입니다.
+-   이전(`«`)/다음(`»`) 버튼도 같은 방식으로 `type`, `keyword`를 함께 전달하고, `prev`/`next` 값이 `false`이면 `disabled` 클래스를 붙입니다.
+
+요청 예시:
+
+``` text
+/board/list                                  → 1페이지, 전체 게시글
+/board/list?pageNum=2                        → 2페이지
+/board/list?type=T&keyword=spring            → 제목에 "spring" 포함, 1페이지
+/board/list?pageNum=2&type=TC&keyword=java   → 제목 또는 내용에 "java" 포함, 2페이지
+```
 
 ------------------------------------------------------------------------
 
@@ -655,13 +844,13 @@ BoardMapper.xml
 Oracle DB
 ```
 
-  계층         담당 역할
-  ------------ -------------------------------------------
-  Controller   사용자 요청 수신 및 응답 화면 결정
-  Service      비즈니스 흐름 처리
-  Mapper       DB 접근 메서드 제공
-  Mapper XML   실제 SQL 작성
-  Domain       DB 및 애플리케이션에서 사용할 데이터 객체
+| 계층       | 담당 역할                                 |
+|:-----------|:------------------------------------------|
+| Controller | 사용자 요청 수신 및 응답 화면 결정        |
+| Service    | 비즈니스 흐름 처리                        |
+| Mapper     | DB 접근 메서드 제공                       |
+| Mapper XML | 실제 SQL 작성                             |
+| Domain     | DB 및 애플리케이션에서 사용할 데이터 객체 |
 
 ### 9-2. 회원 인증과 게시판 연동
 
@@ -731,86 +920,57 @@ http://localhost:8081
 
 ### 10-3. 기능 테스트 순서
 
-  -----------------------------------------------------------------------
-  순서                    테스트                  확인 내용
-  ----------------------- ----------------------- -----------------------
-  1                       회원가입                사용자 정보가 DB에
-                                                  저장되는지 확인
+| 순서 | 테스트             | 확인 내용                                                              |
+|:-----|:-------------------|:-----------------------------------------------------------------------|
+| 1    | 회원가입           | 사용자 정보가 DB에 저장되는지 확인                                     |
+| 2    | 로그인             | DB에 저장된 계정으로 로그인되는지 확인                                 |
+| 3    | 마이페이지         | 로그인한 사용자 정보가 표시되는지 확인                                 |
+| 4    | 회원 정보 수정     | 수정된 정보가 DB에 반영되는지 확인                                     |
+| 5    | 회원 탈퇴          | 회원 삭제 및 로그아웃이 처리되는지 확인                                |
+| 6    | 게시글 작성        | 로그인한 사용자의 아이디로 게시글이 저장되는지 확인                    |
+| 7    | 게시글 목록        | 게시글이 목록에 표시되는지 확인                                        |
+| 8    | 게시글 상세        | 제목, 내용, 작성자, 조회수가 표시되는지 확인                           |
+| 9    | 조회수             | 상세 조회 시 조회수가 증가하는지 확인                                  |
+| 10   | 게시글 수정        | 제목과 내용이 수정되는지 확인                                          |
+| 11   | 게시글 삭제        | 게시글이 삭제되는지 확인                                               |
+| 12   | 작성자별 버튼 제어 | 작성자와 로그인 사용자가 다를 때 수정·삭제 버튼이 표시되지 않는지 확인 |
 
-  2                       로그인                  DB에 저장된 계정으로
-                                                  로그인되는지 확인
+**페이지네이션 · 검색 테스트**
 
-  3                       마이페이지              로그인한 사용자 정보가
-                                                  표시되는지 확인
-
-  4                       회원 정보 수정          수정된 정보가 DB에
-                                                  반영되는지 확인
-
-  5                       회원 탈퇴               회원 삭제 및 로그아웃이
-                                                  처리되는지 확인
-
-  6                       게시글 작성             로그인한 사용자의
-                                                  아이디로 게시글이
-                                                  저장되는지 확인
-
-  7                       게시글 목록             게시글이 목록에
-                                                  표시되는지 확인
-
-  8                       게시글 상세             제목, 내용, 작성자,
-                                                  조회수가 표시되는지
-                                                  확인
-
-  9                       조회수                  상세 조회 시 조회수가
-                                                  증가하는지 확인
-
-  10                      게시글 수정             제목과 내용이
-                                                  수정되는지 확인
-
-  11                      게시글 삭제             게시글이 삭제되는지
-                                                  확인
-
-  12                      작성자별 버튼 제어      작성자와 로그인
-                                                  사용자가 다를 때
-                                                  수정·삭제 버튼이
-                                                  표시되지 않는지 확인
-  -----------------------------------------------------------------------
+| 순서 | 테스트 | 확인 내용 |
+|---|---|---|
+| 13 | 페이지 이동 | 게시글 11개 이상일 때 2페이지 이동, 현재 페이지 번호 강조 |
+| 14 | 검색 | 제목/내용/작성자/조합 검색 결과가 맞는지 확인 |
+| 15 | 검색 후 페이지 이동 | 2페이지로 이동해도 검색 조건이 유지되는지 확인 |
+| 16 | 검색 결과 없음 | "검색 결과가 없습니다." 표시, 페이지 버튼은 `1`만 표시 |
+| 17 | 이전/다음 | 10페이지를 넘길 때 `«`, `»` 버튼 동작 확인 |
 
 ------------------------------------------------------------------------
 
 ## 11. 트러블슈팅
 
-  -----------------------------------------------------------------------------------------------
-  증상                        원인                     해결 방법
-  --------------------------- ------------------------ ------------------------------------------
-  `RequiredArgsConstructor`   Lombok import 누락 또는  `import lombok.RequiredArgsConstructor;`
-  오류                        Lombok 설정 문제         및 IDE 설정 확인
+| 증상                           | 원인                                              | 해결 방법                                                 |
+|:-------------------------------|:--------------------------------------------------|:----------------------------------------------------------|
+| `RequiredArgsConstructor` 오류 | Lombok import 누락 또는 Lombok 설정 문제          | `import lombok.RequiredArgsConstructor;` 및 IDE 설정 확인 |
+| Controller 컴파일 오류         | 중괄호 위치 또는 import 누락                      | 클래스 구조 및 `Authentication`, `Model` import 확인      |
+| 로그인 실패                    | 폼 input의 `name`과 Security 설정 불일치          | `userId`, `userPassword`로 이름 통일                      |
+| Whitelabel 404                 | 요청 경로 또는 Thymeleaf 템플릿 누락              | Controller의 반환 경로와 `templates` 구조 확인            |
+| 비밀번호 수정 후 로그인 실패   | 빈 비밀번호를 해시 처리해 저장                    | 새 비밀번호가 비어 있으면 기존 비밀번호 유지              |
+| 기본 계정 로그인 실패          | 사용자 정의 `UserDetailsService`가 DB 계정을 조회 | DB에 가입된 계정으로 로그인                               |
+| `sec:` 태그 오류               | Thymeleaf Security 확장 의존성 문제               | `thymeleaf-extras-springsecurity6` 및 버전 확인           |
+| 게시글 INSERT 오류             | 시퀀스 또는 트리거 문제                           | `board_seq`, `trg_board_insert` 상태 확인                 |
+| 게시글 작성자 FK 오류          | `tb_user`에 존재하지 않는 사용자 아이디 사용      | 회원 테이블과 게시글의 `user_id` 확인                     |
+| 수정일이 갱신되지 않음         | UPDATE 트리거 문제                                | `trg_board_update` 상태 및 실행 결과 확인                 |
 
-  Controller 컴파일 오류      중괄호 위치 또는 import  클래스 구조 및 `Authentication`, `Model`
-                              누락                     import 확인
+### 페이지네이션 · 검색 관련
 
-  로그인 실패                 폼 input의 `name`과      `userId`, `userPassword`로 이름 통일
-                              Security 설정 불일치     
-
-  Whitelabel 404              요청 경로 또는 Thymeleaf Controller의 반환 경로와 `templates` 구조
-                              템플릿 누락              확인
-
-  비밀번호 수정 후 로그인     빈 비밀번호를 해시       새 비밀번호가 비어 있으면 기존 비밀번호
-  실패                        처리해 저장              유지
-
-  기본 계정 로그인 실패       사용자 정의              DB에 가입된 계정으로 로그인
-                              `UserDetailsService`가   
-                              DB 계정을 조회           
-
-  `sec:` 태그 오류            Thymeleaf Security 확장  `thymeleaf-extras-springsecurity6` 및 버전
-                              의존성 문제              확인
-
-  게시글 INSERT 오류          시퀀스 또는 트리거 문제  `board_seq`, `trg_board_insert` 상태 확인
-
-  게시글 작성자 FK 오류       `tb_user`에 존재하지     회원 테이블과 게시글의 `user_id` 확인
-                              않는 사용자 아이디 사용  
-
-  수정일이 갱신되지 않음      UPDATE 트리거 문제       `trg_board_update` 상태 및 실행 결과 확인
-  -----------------------------------------------------------------------------------------------
+| 증상 | 원인 | 해결 방법 |
+|---|---|---|
+| 검색 후 2페이지를 누르면 검색이 풀림 | 페이지 링크가 `pageNum`만 전달 | 링크에 `type`, `keyword`도 함께 전달 |
+| 검색 결과가 0건일 때 페이지 버튼이 `1, 0`으로 나옴 | `endPage`가 0이 되어 `#numbers.sequence(1, 0)`이 역순 생성 | `PageDTO`에서 `endPage` 최소값을 1로 보정 |
+| 검색어를 넣었는데 전체 목록이 나옴 | 검색 유형(`type`)을 선택하지 않음 | 검색 유형 선택 후 검색 |
+| `ORA-00933` 등 SQL 오류 | 동적 SQL(`<trim>`, `<foreach>`)이 만든 WHERE 절 문제 | 로그 레벨 DEBUG로 실제 실행 SQL 확인 |
+| `target/` 폴더가 Git에 올라감 | `.gitignore` 없이 커밋 | `.gitignore`에 `target/` 추가 후 `git rm -r --cached target` |
 
 ------------------------------------------------------------------------
 
@@ -851,6 +1011,15 @@ http://localhost:8081
 -   Update: 게시글 수정
 -   Delete: 게시글 삭제
 
+### 페이지네이션 · 검색
+
+-   `Criteria`로 `pageNum`, `amount`, `type`, `keyword`를 한 번에 받아 Controller → Service → Mapper로 전달합니다.
+-   `PageDTO`가 전체 건수로 시작/끝 페이지와 이전/다음 버튼 여부를 계산합니다.
+-   Oracle은 `ROWNUM`을 3단 서브쿼리로 감싸 `ORDER BY` 이후에 범위를 자릅니다.
+-   MyBatis의 `<sql>`, `<include>`, `<trim>`, `<foreach>`, `<choose>`로 검색 조건을 동적으로 조립합니다.
+-   `#{}` 바인딩은 `PreparedStatement`로 처리되어 검색어에 의한 SQL Injection을 막아 줍니다.
+-   페이지 이동 링크에도 검색 조건(`type`, `keyword`)을 함께 넘겨야 검색 상태가 유지됩니다.
+
 ------------------------------------------------------------------------
 
 ## 13. 프로젝트를 통해 이해한 핵심 구조
@@ -884,6 +1053,7 @@ Spring Boot
     |       +-- User
     |       +-- Board
     |       +-- Criteria
+    |       +-- PageDTO
     |
     +-- Thymeleaf
             |

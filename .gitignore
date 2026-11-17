@@ -1,0 +1,17 @@
+# Build output
+target/
+build/
+out/
+
+# IDE
+.idea/
+*.iml
+*.iws
+*.ipr
+.vscode/
+.classpath
+.project
+.settings/
+
+# Maven wrapper jar
+.mvn/wrapper/maven-wrapper.jar

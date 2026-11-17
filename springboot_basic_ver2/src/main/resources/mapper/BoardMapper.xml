@@ -31,4 +31,61 @@
         WHERE board_id = #{boardId}
     </update>
 
+
+    <!-- 검색 조건 -->
+    <sql id="criteria">
+        <trim prefix="WHERE (" suffix=")" prefixOverrides="OR">
+            <foreach item="type" collection="typeArr">
+                <trim prefix="OR">
+                    <choose>
+                        <when test="type == 'T'.toString()">
+                            title LIKE '%' || #{keyword} || '%'
+                        </when>
+                        <when test="type == 'C'.toString()">
+                            content LIKE '%' || #{keyword} || '%'
+                        </when>
+                        <when test="type == 'W'.toString()">
+                            user_id LIKE '%' || #{keyword} || '%'
+                        </when>
+                    </choose>
+                </trim>
+            </foreach>
+        </trim>
+    </sql>
+
+    <!-- 페이징 + 검색 -->
+    <select id="getListWithPaging"
+            parameterType="kopo.aisw.springboot_basic.domain.Criteria"
+            resultType="kopo.aisw.springboot_basic.domain.Board">
+
+        SELECT *
+        FROM (
+        SELECT ROWNUM NUM, BOARD.*
+        FROM (
+        SELECT *
+        FROM tb_board
+        <if test="typeArr != null and typeArr.length > 0 and keyword != null and keyword != ''">
+            <include refid="criteria"/>
+        </if>
+        ORDER BY board_id DESC
+        ) BOARD
+        )
+        WHERE NUM BETWEEN #{offset} + 1
+        AND #{offset} + #{amount}
+
+    </select>
+
+    <!-- 검색 결과 전체 개수 -->
+    <select id="getTotalCount"
+            parameterType="kopo.aisw.springboot_basic.domain.Criteria"
+            resultType="int">
+
+        SELECT COUNT(*)
+        FROM tb_board
+        <if test="typeArr != null and typeArr.length > 0 and keyword != null and keyword != ''">
+            <include refid="criteria"/>
+        </if>
+
+    </select>
+
 </mapper>

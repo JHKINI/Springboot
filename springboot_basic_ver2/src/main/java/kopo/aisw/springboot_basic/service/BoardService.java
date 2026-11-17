@@ -4,7 +4,7 @@ import kopo.aisw.springboot_basic.domain.Board;
 import kopo.aisw.springboot_basic.mapper.BoardMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
+import kopo.aisw.springboot_basic.domain.Criteria;
 import java.util.List;
 
 @Service
@@ -38,5 +38,14 @@ public class BoardService {
     // 게시글 삭제
     public void deleteBoard(Long boardId) {
         boardMapper.delete(boardId);
+    }
+    // 페이징된 게시글 목록
+    public List<Board> getListWithPaging(Criteria cri) {
+        return boardMapper.getListWithPaging(cri);
+    }
+
+    // 검색 결과 전체 개수
+    public int getTotalCount(Criteria cri) {
+        return boardMapper.getTotalCount(cri);
     }
 }

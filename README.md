@@ -21,16 +21,19 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 
 <table>
   <tr>
-    <td><img src="img/test1.png" width="400"></td>
-    <td><img src="img/test2.png" width="400"></td>
+    <td align="center"><img src="img/test1.png" width="400"><br><sub>로그인</sub></td>
+    <td align="center"><img src="img/test2.png" width="400"><br><sub>회원가입</sub></td>
   </tr>
   <tr>
-    <td><img src="img/test3.png" width="400"></td>
-    <td><img src="img/test4.png" width="400"></td>
+    <td align="center"><img src="img/test3.png" width="400"><br><sub>메인 화면</sub></td>
+    <td align="center"><img src="img/test4.png" width="400"><br><sub>마이페이지</sub></td>
   </tr>
   <tr>
-    <td><img src="img/test5.png" width="400"></td>
-    <td><img src="img/test6.png" width="400"></td>
+    <td align="center"><img src="img/test5.png" width="400"><br><sub>게시글 상세 (에디터 · 댓글)</sub></td>
+    <td align="center"><img src="img/test6.png" width="400"><br><sub>게시판 목록 (페이지네이션 · 검색)</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="img/test7.png" width="400"><br><sub>게시글 수정 (Toast UI Editor · 파일 첨부)</sub></td>
   </tr>
 </table>
 

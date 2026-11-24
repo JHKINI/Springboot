@@ -26,6 +26,11 @@ public class PageDTO {
             this.endPage = realEnd;
         }
 
+        // 검색 결과가 0건이면 realEnd가 0이 되어 페이지 버튼이 "1, 0"으로 만들어지므로 최소 1로 보정
+        if (this.endPage < 1) {
+            this.endPage = 1;
+        }
+
         this.prev = this.startPage > 1;
         this.next = this.endPage < realEnd;
     }

@@ -85,7 +85,7 @@
                 <!-- 이전 페이지 -->
                 <li class="page-item" th:classappend="${!pageMaker.prev} ? 'disabled'">
                     <a class="page-link"
-                       th:href="@{/board/list(pageNum=${pageMaker.startPage - 1})}"
+                       th:href="@{/board/list(pageNum=${pageMaker.startPage - 1}, type=${pageMaker.cri.type}, keyword=${pageMaker.cri.keyword})}"
                        aria-label="Previous">
                         <span aria-hidden="true">&laquo;</span>
                     </a>
@@ -96,14 +96,14 @@
                     th:each="num : ${#numbers.sequence(pageMaker.startPage, pageMaker.endPage)}"
                     th:classappend="${pageMaker.cri.pageNum == num} ? 'active'">
                     <a class="page-link"
-                       th:href="@{/board/list(pageNum=${num})}"
+                       th:href="@{/board/list(pageNum=${num}, type=${pageMaker.cri.type}, keyword=${pageMaker.cri.keyword})}"
                        th:text="${num}">1</a>
                 </li>
 
                 <!-- 다음 페이지 -->
                 <li class="page-item" th:classappend="${!pageMaker.next} ? 'disabled'">
                     <a class="page-link"
-                       th:href="@{/board/list(pageNum=${pageMaker.endPage + 1})}"
+                       th:href="@{/board/list(pageNum=${pageMaker.endPage + 1}, type=${pageMaker.cri.type}, keyword=${pageMaker.cri.keyword})}"
                        aria-label="Next">
                         <span aria-hidden="true">&raquo;</span>
                     </a>

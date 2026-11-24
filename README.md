@@ -4,7 +4,7 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 구현한 웹 애플리케이션 실습 프로젝트입니다.
 
 회원가입과 로그인부터 회원 정보 관리, 게시판 CRUD, 조회수 처리,
-페이지네이션까지 단계적으로 구현하며 Spring 기반 웹 애플리케이션의 기본
+페이지네이션·검색, 댓글, 파일 첨부까지 단계적으로 구현하며 Spring 기반 웹 애플리케이션의 기본
 구조와 데이터 처리 흐름을 학습했습니다.
 
 ## 레포 구성
@@ -12,7 +12,7 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 | 폴더 | 단계 | 내용 |
 |---|---|---|
 | `springboot_basic` | Day 1 | Spring Security 회원가입 · 로그인 · 마이페이지 · 정보 수정 · 회원 탈퇴 |
-| `springboot_basic_ver2` | Day 1 + Day 2 (업그레이드) | 회원 관리 + 게시판 CRUD + 조회수 + **페이지네이션 · 검색** |
+| `springboot_basic_ver2` | Day 1 ~ Day 5 (업그레이드) | 회원 관리 + 게시판 CRUD + 조회수 + 페이지네이션 · 검색 + **댓글 · 파일 첨부 · 에디터** |
 
 > 이 README는 `springboot_basic_ver2` 기준으로 작성했습니다.
 
@@ -42,6 +42,7 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 | 구분      | 기능               | 설명                                                              |
 |:----------|:-------------------|:------------------------------------------------------------------|
 | 회원 관리 | 회원가입           | 사용자 정보를 DB에 저장하고 비밀번호를 BCrypt로 해시 처리         |
+| 회원 관리 | 아이디 중복 확인   | 이미 존재하는 아이디면 안내 메시지를 보여주고 가입 차단           |
 | 회원 관리 | 로그인 / 로그아웃  | Spring Security를 이용한 인증 및 세션 관리                        |
 | 회원 관리 | 마이페이지         | 로그인한 사용자의 정보 조회                                       |
 | 회원 관리 | 회원 정보 수정     | 이름 및 비밀번호 수정                                             |
@@ -53,8 +54,11 @@ Spring Boot와 Spring Security, MyBatis, Thymeleaf, Oracle을 활용해
 | 게시판    | 조회수             | 상세 조회 시 조회수 증가                                          |
 | 게시판    | 페이지네이션       | Criteria·PageDTO로 페이지 번호와 이전·다음 버튼 계산 (10개씩)     |
 | 게시판    | 검색               | 제목·내용·작성자 조합 동적 검색 (검색 조건 유지한 채 페이지 이동) |
+| 게시판    | 에디터             | 작성·수정 화면에 Toast UI Editor 적용, 상세 화면은 Viewer로 출력  |
+| 게시판    | 파일 첨부          | 여러 파일 업로드 · 다운로드 · 수정 시 개별 삭제 (파일당 5MB 제한) |
+| 게시판    | 댓글               | REST API로 등록·조회·수정·삭제, 본인 댓글만 수정·삭제 가능        |
 
-> 페이지네이션과 검색은 [8장](#8-페이지네이션--검색-구현)에서 자세히 설명합니다.
+> 페이지네이션과 검색은 [8장](#8-페이지네이션--검색-구현)에서, 댓글은 9장, 파일 첨부와 에디터는 10장에서 자세히 설명합니다.
 
 ------------------------------------------------------------------------
 
@@ -106,16 +110,21 @@ src/main/java/kopo/aisw/springboot_basic
 ├── controller/
 │   ├── MainController.java
 │   ├── UserController.java
-│   └── BoardController.java
+│   ├── BoardController.java
+│   └── CommentController.java
 ├── service/
 │   ├── UserService.java
-│   └── BoardService.java
+│   ├── BoardService.java
+│   └── CommentService.java
 ├── mapper/
 │   ├── UserMapper.java
-│   └── BoardMapper.java
+│   ├── BoardMapper.java
+│   └── CommentMapper.java
 ├── domain/
 │   ├── User.java
 │   ├── Board.java
+│   ├── Comment.java
+│   ├── FileInfo.java
 │   ├── Criteria.java
 │   └── PageDTO.java
 └── security/
@@ -126,7 +135,8 @@ src/main/resources
 ├── application.properties
 ├── mapper/
 │   ├── UserMapper.xml
-│   └── BoardMapper.xml
+│   ├── BoardMapper.xml
+│   └── CommentMapper.xml
 └── templates/
     ├── index.html
     ├── user/
@@ -138,6 +148,9 @@ src/main/resources
         ├── write.html
         ├── view.html
         └── edit.html
+
+프로젝트 루트
+└── uploads/          # 첨부파일 저장 폴더 (실행 시 자동 생성, Git 제외)
 ```
 
 ------------------------------------------------------------------------
@@ -243,6 +256,37 @@ public void registerUser(User user) {
     userMapper.save(user);
 }
 ```
+
+**아이디 중복 확인**
+
+가입 요청을 처리하기 전에 같은 아이디가 이미 있는지 확인하고, 있으면 가입 화면으로 되돌려
+오류 메시지를 보여줍니다. 리다이렉트 후에도 메시지가 한 번 전달되도록 `RedirectAttributes`의
+Flash 속성을 사용합니다.
+
+``` java
+// UserService
+public boolean isUserIdExists(String userId) {
+    return userMapper.findById(userId) != null;
+}
+
+// UserController
+@PostMapping("/signup")
+public String signup(User user, RedirectAttributes ra) {
+    try {
+        if (userService.isUserIdExists(user.getUserId())) {
+            ra.addFlashAttribute("error", "이미 존재하는 아이디입니다.");
+            return "redirect:/user/signup";
+        }
+        userService.registerUser(user);
+        return "redirect:/user/login";
+    } catch (Exception e) {
+        ra.addFlashAttribute("error", "회원가입 중 오류가 발생했습니다.");
+        return "redirect:/user/signup";
+    }
+}
+```
+
+`signup.html`에서는 `th:if="${error}"`로 오류 메시지가 있을 때만 경고창을 보여줍니다.
 
 ### 5-5. 회원 관리 URL
 
@@ -457,6 +501,10 @@ public class BoardService {
 }
 ```
 
+> 위 코드는 게시판 CRUD의 기본 형태(Day 2)입니다. 이후 파일 첨부를 추가하면서 `saveBoard`와
+> `updateBoard`가 파일 목록을 함께 받도록, `deleteBoard`는 첨부파일까지 지우도록 확장했습니다.
+> 최종 코드는 [10장](#10-파일-첨부--에디터-구현)에서 설명합니다.
+
 **상세 조회 처리 순서**
 
 1.  게시글 번호를 전달받습니다.
@@ -492,6 +540,9 @@ public String write(Board board, Authentication auth) {
 ```
 
 이렇게 하면 로그인한 사용자 정보와 게시글 작성자 정보가 연결됩니다.
+
+> 파일 첨부 추가 후에는 작성·수정 요청이 `multipart/form-data`로 전달되어 `files`, `deleteFiles`
+> 파라미터와 파일 다운로드·삭제 URL이 추가됩니다. ([10장](#10-파일-첨부--에디터-구현) 참고)
 
 ------------------------------------------------------------------------
 
@@ -821,9 +872,243 @@ public String list(Criteria cri, Model model) {
 
 ------------------------------------------------------------------------
 
-## 9. 데이터 처리 흐름 정리
+## 9. 댓글 구현
 
-### 9-1. 일반적인 게시글 작성 흐름
+게시글 상세 화면에서 댓글을 등록·조회·수정·삭제합니다. 게시글 CRUD와 달리 **페이지를 새로 불러오지 않고**
+JavaScript `fetch`로 REST API를 호출해 댓글 영역만 다시 그립니다.
+
+### 9-1. 댓글 테이블 설계
+
+게시글이 삭제되면 댓글도 함께 지워지도록 `ON DELETE CASCADE`를 설정했습니다.
+
+``` sql
+CREATE TABLE tb_comment (
+    comment_id NUMBER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    board_id NUMBER NOT NULL,
+    user_id VARCHAR2(50) NOT NULL,
+    content CLOB NOT NULL,
+    reg_date TIMESTAMP DEFAULT SYSTIMESTAMP,
+    mod_date TIMESTAMP DEFAULT SYSTIMESTAMP,
+    CONSTRAINT fk_comment_board FOREIGN KEY (board_id)
+        REFERENCES tb_board(board_id) ON DELETE CASCADE
+);
+
+-- 수정일자를 자동으로 업데이트하는 트리거
+CREATE OR REPLACE TRIGGER trg_comment_update
+    BEFORE UPDATE ON tb_comment
+    FOR EACH ROW
+BEGIN
+    :NEW.mod_date := SYSTIMESTAMP;
+END;
+/
+```
+
+게시글 번호는 시퀀스와 트리거로 만들었지만, 댓글 번호는 Oracle 12c 이상의 `IDENTITY` 컬럼으로
+자동 생성합니다.
+
+### 9-2. 도메인 · Mapper · Service
+
+``` java
+@Getter
+@Setter
+public class Comment {
+    private Long commentId;
+    private Long boardId;
+    private String userId;
+    private String content;
+    private LocalDateTime regDate;
+    private LocalDateTime modDate;
+}
+```
+
+``` java
+@Mapper
+public interface CommentMapper {
+    void save(Comment comment);
+    List<Comment> findByBoardId(Long boardId);
+    void update(Comment comment);
+    void delete(Long commentId);
+    Comment findById(Long commentId);
+}
+```
+
+`CommentMapper.xml`의 주요 SQL입니다. 댓글은 최신순으로 조회합니다.
+
+``` xml
+<insert id="save" parameterType="kopo.aisw.springboot_basic.domain.Comment">
+    INSERT INTO tb_comment (board_id, user_id, content)
+    VALUES (#{boardId}, #{userId}, #{content})
+</insert>
+
+<select id="findByBoardId" resultType="kopo.aisw.springboot_basic.domain.Comment">
+    SELECT * FROM tb_comment
+    WHERE board_id = #{boardId}
+    ORDER BY comment_id DESC
+</select>
+```
+
+`CommentService`는 Mapper를 그대로 호출하는 얇은 계층입니다
+(`saveComment`, `getCommentsByBoardId`, `updateComment`, `deleteComment`, `getCommentById`).
+
+### 9-3. CommentController -- REST API
+
+화면(HTML)이 아니라 데이터(JSON)를 주고받기 때문에 `@Controller` 대신 `@RestController`를
+사용하고, 응답은 `ResponseEntity`로 상태 코드를 직접 지정합니다.
+
+| HTTP Method | URL                              | 기능           | 비고                     |
+|:------------|:---------------------------------|:---------------|:-------------------------|
+| POST        | `/api/comments`                  | 댓글 등록      | 작성자는 로그인 정보 사용 |
+| GET         | `/api/comments/board/{boardId}`  | 게시글의 댓글 목록 | JSON 배열 반환        |
+| PUT         | `/api/comments/{commentId}`      | 댓글 수정      | 작성자 본인만            |
+| DELETE      | `/api/comments/{commentId}`      | 댓글 삭제      | 작성자 본인만            |
+
+**작성자 확인은 서버에서 합니다.** 수정·삭제 요청이 오면 DB의 댓글 작성자와 로그인한 사용자를
+비교하고, 다르면 `403 Forbidden`을 반환합니다. 화면에서 버튼을 숨기는 것만으로는 막을 수 없기
+때문입니다.
+
+``` java
+@DeleteMapping("/{commentId}")
+public ResponseEntity<Void> delete(@PathVariable Long commentId,
+                                   Authentication auth) {
+    Comment comment = commentService.getCommentById(commentId);
+    if (!comment.getUserId().equals(auth.getName())) {
+        return ResponseEntity.status(403).build();
+    }
+
+    commentService.deleteComment(commentId);
+    return ResponseEntity.ok().build();
+}
+```
+
+등록할 때도 작성자 아이디를 요청 본문에서 받지 않고 `auth.getName()`으로 지정합니다.
+
+### 9-4. view.html -- fetch로 댓글 영역 갱신
+
+``` text
+화면 로드 → loadComments() → GET /api/comments/board/{id} → 댓글 목록 HTML 생성
+등록/수정/삭제 → fetch (POST / PUT / DELETE) → 성공하면 loadComments()로 목록 다시 그림
+```
+
+-   댓글 작성 폼은 로그인한 사용자에게만 보입니다.
+-   `comment.userId === currentUser`인 댓글에만 수정·삭제 버튼을 출력합니다.
+-   댓글 내용을 `innerHTML`로 그리기 때문에 `escapeHtml()`로 특수문자를 변환해 스크립트가 실행되지
+    않도록 합니다. (XSS 방지)
+
+------------------------------------------------------------------------
+
+## 10. 파일 첨부 · 에디터 구현
+
+### 10-1. 첨부파일 테이블 설계
+
+파일 자체는 서버 폴더에 저장하고, DB에는 **파일 정보**(원본 이름, 저장 이름, 경로, 크기, 종류)만
+저장합니다. 댓글과 마찬가지로 게시글이 삭제되면 `ON DELETE CASCADE`로 정보도 함께 삭제됩니다.
+
+``` sql
+CREATE SEQUENCE file_info_seq
+    START WITH 1
+    INCREMENT BY 1
+    NOCACHE
+    NOCYCLE;
+
+CREATE TABLE file_info (
+    file_id NUMBER PRIMARY KEY,
+    board_id NUMBER NOT NULL,
+    original_file_name VARCHAR2(255) NOT NULL,
+    saved_file_name VARCHAR2(255) NOT NULL,
+    file_path VARCHAR2(255) NOT NULL,
+    file_size NUMBER NOT NULL,
+    file_type VARCHAR2(100),
+    reg_date TIMESTAMP DEFAULT SYSTIMESTAMP,
+    CONSTRAINT fk_board_id FOREIGN KEY (board_id)
+        REFERENCES tb_board(board_id) ON DELETE CASCADE
+);
+
+CREATE OR REPLACE TRIGGER file_info_bir
+BEFORE INSERT ON file_info
+FOR EACH ROW
+BEGIN
+    SELECT file_info_seq.NEXTVAL
+    INTO :NEW.file_id
+    FROM dual;
+END;
+/
+```
+
+### 10-2. 업로드 설정
+
+``` properties
+# 파일 업로드 설정
+file.upload.directory=uploads
+spring.servlet.multipart.max-file-size=5MB
+spring.servlet.multipart.max-request-size=5MB
+```
+
+-   `uploads`는 상대 경로이며, 실행 시 `@PostConstruct`에서 절대 경로로 바꿔 폴더를 자동 생성합니다.
+-   파일 한 개당 5MB, 한 번의 요청 전체도 5MB까지 허용합니다.
+-   `uploads/`는 `.gitignore`에 넣어 업로드된 파일이 Git에 올라가지 않게 했습니다.
+
+### 10-3. 저장 · 수정 · 삭제 · 다운로드 흐름 (BoardService)
+
+| 기능        | 처리 내용                                                                                   |
+|:------------|:--------------------------------------------------------------------------------------------|
+| 저장        | 게시글 저장 → 파일마다 `UUID_원본이름`으로 서버 폴더에 복사 → `file_info`에 정보 저장        |
+| 수정        | 체크한 기존 파일 삭제(실제 파일 + DB) → 새 파일 추가 → 게시글 수정 (`@Transactional`)        |
+| 게시글 삭제 | 첨부파일의 실제 파일 삭제 → `file_info` 삭제 → 게시글 삭제 (`@Transactional`)               |
+| 다운로드    | `file_id`로 정보 조회 → `Resource`로 읽어 `Content-Disposition: attachment`로 응답           |
+
+저장할 때 원본 이름에 UUID를 붙이는 이유는 **같은 이름의 파일이 올라와도 서로 덮어쓰지 않게** 하기
+위해서입니다. 원래 이름은 DB의 `original_file_name`에 보관해 다운로드할 때 그대로 돌려줍니다.
+
+``` java
+String originalFilename = file.getOriginalFilename();
+String uniqueFilename = UUID.randomUUID().toString() + "_" + originalFilename;
+
+Path uploadPath = Paths.get(uploadDirectory).toAbsolutePath().normalize();
+Path filePath = uploadPath.resolve(uniqueFilename).normalize();
+
+Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+```
+
+``` java
+// 다운로드: 저장된 파일을 읽어 첨부파일로 응답
+return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+        .header(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=\"" + fileInfo.getOriginalFileName() + "\"")
+        .body(resource);
+```
+
+### 10-4. 추가된 게시판 URL
+
+| HTTP Method | URL                           | 기능                         |
+|:------------|:------------------------------|:-----------------------------|
+| POST        | `/board/write`                | 게시글 저장 (`files` 파일 목록 포함) |
+| POST        | `/board/edit/{boardId}`       | 게시글 수정 (`files`, `deleteFiles` 포함) |
+| GET         | `/board/download/{fileId}`    | 첨부파일 다운로드            |
+| POST        | `/board/file/delete/{fileId}` | 첨부파일 단일 삭제           |
+
+### 10-5. 화면 변경
+
+| 화면        | 변경 내용                                                                              |
+|:------------|:---------------------------------------------------------------------------------------|
+| `write.html` | `enctype="multipart/form-data"` 폼, `<input type="file" name="files" multiple>`        |
+| `edit.html`  | 기존 첨부파일 목록과 삭제 체크박스(`name="deleteFiles"`), 새 파일 추가 입력            |
+| `view.html`  | 첨부파일 목록(다운로드 링크와 KB 단위 크기) 출력, 댓글 영역 추가                        |
+
+파일을 보내려면 폼의 `enctype`이 반드시 `multipart/form-data`여야 합니다. 설정하지 않으면 파일 이름만
+문자열로 전달되고 내용은 서버로 올라오지 않습니다.
+
+### 10-6. Toast UI Editor
+
+작성·수정 화면의 내용 입력창을 Toast UI Editor로 바꿨습니다. 에디터에서 작성한 내용은 폼 전송 직전에
+`hidden` 입력(`name="content"`)에 담아 기존 게시글 저장 흐름을 그대로 사용하고, 상세 화면은
+같은 라이브러리의 Viewer(`viewer: true`)로 출력합니다.
+
+------------------------------------------------------------------------
+
+## 11. 데이터 처리 흐름 정리
+
+### 11-1. 일반적인 게시글 작성 흐름
 
 ``` text
 Browser
@@ -852,7 +1137,7 @@ Oracle DB
 | Mapper XML | 실제 SQL 작성                             |
 | Domain     | DB 및 애플리케이션에서 사용할 데이터 객체 |
 
-### 9-2. 회원 인증과 게시판 연동
+### 11-2. 회원 인증과 게시판 연동
 
 ``` text
 회원가입
@@ -890,22 +1175,25 @@ tb_board 저장
 
 ------------------------------------------------------------------------
 
-## 10. 실행 방법
+## 12. 실행 방법
 
-### 10-1. 데이터베이스 준비
+### 12-1. 데이터베이스 준비
 
 1.  Oracle 데이터베이스를 실행합니다.
 2.  `tb_user` 테이블을 생성합니다.
 3.  위의 Oracle SQL을 이용해 `tb_board` 테이블을 생성합니다.
 4.  `board_seq` 시퀀스와 `trg_board_insert`, `trg_board_update` 트리거를
     생성합니다.
-5.  `application.properties`의 DB 접속 정보를 확인합니다.
+5.  댓글용 `tb_comment` 테이블과 `trg_comment_update` 트리거를 생성합니다. ([9-1](#9-1-댓글-테이블-설계))
+6.  첨부파일용 `file_info_seq` 시퀀스, `file_info` 테이블, `file_info_bir` 트리거를
+    생성합니다. ([10-1](#10-1-첨부파일-테이블-설계))
+7.  `application.properties`의 DB 접속 정보를 확인합니다.
 
 회원 테이블의 비밀번호 컬럼은 BCrypt 해시값을 저장할 수 있도록 충분한
 길이로 설정해야 합니다. 기존 실습 기준으로 `VARCHAR2(100)` 이상을
 사용합니다.
 
-### 10-2. 애플리케이션 실행
+### 12-2. 애플리케이션 실행
 
 1.  IntelliJ IDEA에서 프로젝트를 엽니다.
 2.  Project SDK를 JDK 17로 설정합니다.
@@ -918,7 +1206,7 @@ tb_board 저장
 http://localhost:8081
 ```
 
-### 10-3. 기능 테스트 순서
+### 12-3. 기능 테스트 순서
 
 | 순서 | 테스트             | 확인 내용                                                              |
 |:-----|:-------------------|:-----------------------------------------------------------------------|
@@ -945,9 +1233,22 @@ http://localhost:8081
 | 16 | 검색 결과 없음 | "검색 결과가 없습니다." 표시, 페이지 버튼은 `1`만 표시 |
 | 17 | 이전/다음 | 10페이지를 넘길 때 `«`, `»` 버튼 동작 확인 |
 
+**회원가입 · 댓글 · 파일 첨부 테스트**
+
+| 순서 | 테스트 | 확인 내용 |
+|---|---|---|
+| 18 | 아이디 중복 | 이미 있는 아이디로 가입하면 오류 메시지가 보이고 가입되지 않는지 확인 |
+| 19 | 댓글 작성 | 로그인 후 댓글이 목록 맨 위에 추가되는지 확인 |
+| 20 | 댓글 수정·삭제 | 본인 댓글에만 버튼이 보이고, 수정·삭제가 반영되는지 확인 |
+| 21 | 다른 사용자 댓글 | 다른 계정으로 접속했을 때 수정·삭제 버튼이 없는지 확인 |
+| 22 | 파일 첨부 작성 | 여러 파일을 첨부해 저장하고 `uploads/`와 `file_info`에 생기는지 확인 |
+| 23 | 파일 다운로드 | 상세 화면의 파일 링크로 원래 이름 그대로 내려받아지는지 확인 |
+| 24 | 수정 시 파일 변경 | 기존 파일 삭제 체크 + 새 파일 추가가 함께 반영되는지 확인 |
+| 25 | 게시글 삭제 | 게시글을 지우면 첨부파일과 댓글도 함께 삭제되는지 확인 |
+
 ------------------------------------------------------------------------
 
-## 11. 트러블슈팅
+## 13. 트러블슈팅
 
 | 증상                           | 원인                                              | 해결 방법                                                 |
 |:-------------------------------|:--------------------------------------------------|:----------------------------------------------------------|
@@ -962,6 +1263,16 @@ http://localhost:8081
 | 게시글 작성자 FK 오류          | `tb_user`에 존재하지 않는 사용자 아이디 사용      | 회원 테이블과 게시글의 `user_id` 확인                     |
 | 수정일이 갱신되지 않음         | UPDATE 트리거 문제                                | `trg_board_update` 상태 및 실행 결과 확인                 |
 
+### 댓글 · 파일 첨부 관련
+
+| 증상 | 원인 | 해결 방법 |
+|---|---|---|
+| 댓글·파일 저장 시 `ORA-00942` | `tb_comment` 또는 `file_info` 테이블이 없음 | [9-1](#9-1-댓글-테이블-설계), [10-1](#10-1-첨부파일-테이블-설계)의 SQL을 scott 계정으로 실행 |
+| 다른 사람의 댓글을 수정·삭제하면 `403` | 서버에서 작성자 본인 여부를 확인함 | 정상 동작. 본인 댓글만 수정·삭제 가능 |
+| 파일을 올렸는데 서버에 전달되지 않음 | 폼에 `enctype="multipart/form-data"`가 없음 | 작성·수정 폼에 `enctype` 지정 |
+| 큰 파일 업로드가 실패함 | `max-file-size`, `max-request-size` 5MB 제한 | `application.properties`의 업로드 용량 설정 확인 |
+| 저장소를 새로 받았더니 첨부파일이 없음 | `uploads/`는 `.gitignore`로 Git에서 제외됨 | 파일은 실행 환경마다 따로 저장됨 (DB 정보만 남아 있을 수 있음) |
+
 ### 페이지네이션 · 검색 관련
 
 | 증상 | 원인 | 해결 방법 |
@@ -974,7 +1285,7 @@ http://localhost:8081
 
 ------------------------------------------------------------------------
 
-## 12. 학습 내용 및 핵심 정리
+## 14. 학습 내용 및 핵심 정리
 
 ### Spring Security
 
@@ -1011,6 +1322,20 @@ http://localhost:8081
 -   Update: 게시글 수정
 -   Delete: 게시글 삭제
 
+### 댓글 (REST API)
+
+-   `@RestController`와 `ResponseEntity`로 JSON 응답과 HTTP 상태 코드를 직접 다룹니다.
+-   `@RequestBody`로 JSON 요청 본문을 객체로 받고, `@PathVariable`로 URL의 번호를 받습니다.
+-   수정·삭제는 서버에서 작성자 본인 여부를 검사해 아니면 `403`을 반환합니다.
+-   `fetch`로 API를 호출하고 댓글 영역만 다시 그리며, `innerHTML`에 넣는 값은 이스케이프합니다.
+
+### 파일 첨부
+
+-   `MultipartFile`로 업로드 파일을 받고, `multipart/form-data` 폼이 필요합니다.
+-   파일은 서버 폴더에, 정보는 DB에 나눠 저장하고, 저장 이름에는 UUID를 붙여 이름 충돌을 막습니다.
+-   파일과 DB를 함께 지우는 수정·삭제는 `@Transactional`로 묶어 처리합니다.
+-   `Content-Disposition` 헤더로 브라우저가 파일을 내려받도록 응답합니다.
+
 ### 페이지네이션 · 검색
 
 -   `Criteria`로 `pageNum`, `amount`, `type`, `keyword`를 한 번에 받아 Controller → Service → Mapper로 전달합니다.
@@ -1022,7 +1347,7 @@ http://localhost:8081
 
 ------------------------------------------------------------------------
 
-## 13. 프로젝트를 통해 이해한 핵심 구조
+## 15. 프로젝트를 통해 이해한 핵심 구조
 
 ``` text
 Spring Boot
@@ -1037,21 +1362,26 @@ Spring Boot
     |       |
     |       +-- UserController
     |       +-- BoardController
+    |       +-- CommentController (REST)
     |
     +-- Service
     |       |
     |       +-- UserService
     |       +-- BoardService
+    |       +-- CommentService
     |
     +-- Mapper
     |       |
     |       +-- UserMapper
     |       +-- BoardMapper
+    |       +-- CommentMapper
     |
     +-- Domain
     |       |
     |       +-- User
     |       +-- Board
+    |       +-- Comment
+    |       +-- FileInfo
     |       +-- Criteria
     |       +-- PageDTO
     |

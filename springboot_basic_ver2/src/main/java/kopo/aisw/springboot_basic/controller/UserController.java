@@ -9,6 +9,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/user")
@@ -29,9 +30,20 @@ public class UserController {
 
     // 코드 추가 1 : signup 처리
     @PostMapping("/signup")
-    public String signup(User user) {
-        userService.registerUser(user);
-        return "redirect:/user/login";
+    public String signup(User user, RedirectAttributes ra) {
+        try {
+            // 아이디 중복 체크
+            if (userService.isUserIdExists(user.getUserId())) {
+                ra.addFlashAttribute("error", "이미 존재하는 아이디입니다.");
+                return "redirect:/user/signup";
+            }
+
+            userService.registerUser(user);
+            return "redirect:/user/login";
+        } catch (Exception e) {
+            ra.addFlashAttribute("error", "회원가입 중 오류가 발생했습니다.");
+            return "redirect:/user/signup";
+        }
     }
 
     // 마이페이지 (로그인한 사용자 정보 조회)

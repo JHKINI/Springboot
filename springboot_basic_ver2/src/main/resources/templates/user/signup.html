@@ -33,6 +33,10 @@
 <body>
 <div class="container">
     <h2>회원가입</h2>
+        <!-- 폼 태그 위에 추가 -->
+        <div th:if="${error}" class="alert alert-danger" role="alert">
+            <span th:text="${error}"></span>
+        </div>
     <form th:action="@{/user/signup}" method="post">
         <div class="form-group">
             <label for="userId">아이디</label>

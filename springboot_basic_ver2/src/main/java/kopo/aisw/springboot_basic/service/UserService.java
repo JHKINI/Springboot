@@ -40,8 +40,12 @@ public class UserService {
         user.setUserAuth("USER");
 
         userMapper.update(user);
-    }
 
+    }
+    // 기존 메서드 아래에 추가
+    public boolean isUserIdExists(String userId) {
+        return userMapper.findById(userId) != null;
+    }
     public void deleteUser(String userId) {
         userMapper.delete(userId);
     }
